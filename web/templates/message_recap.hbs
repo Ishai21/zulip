@@ -1,0 +1,32 @@
+{{#if (not has_unreads)}}
+    <p class="message-recap-empty">{{t "You're all caught up! No unread messages to recap."}}</p>
+{{else if (not has_sections)}}
+    <p class="message-recap-empty">{{t "The recap came back empty. Try again in a moment."}}</p>
+{{else}}
+    <p class="message-recap-meta">
+        {{#if truncated}}
+            {{t "Recap of your {included_count} most recent unread messages (of {unread_count})."}}
+        {{else}}
+            {{t "Recap of your {unread_count} unread messages."}}
+        {{/if}}
+    </p>
+    {{#each sections}}
+        <div class="message-recap-section">
+            <h4 class="message-recap-heading">{{heading}}</h4>
+            <ul class="message-recap-points">
+                {{#each points}}
+                    <li class="message-recap-point">
+                        <span class="message-recap-text">{{text}}</span>
+                        {{#if has_references}}
+                            <span class="message-recap-references">
+                                {{#each references}}
+                                    <a class="message-recap-reference" href="{{url}}" title="{{conversation}}">{{sender}}</a>
+                                {{/each}}
+                            </span>
+                        {{/if}}
+                    </li>
+                {{/each}}
+            </ul>
+        </div>
+    {{/each}}
+{{/if}}

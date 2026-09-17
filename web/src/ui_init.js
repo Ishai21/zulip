@@ -75,6 +75,7 @@ import * as message_fetch from "./message_fetch.ts";
 import * as message_list_hover from "./message_list_hover.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_recap from "./message_recap.ts";
 import * as message_reminder from "./message_reminder.ts";
 import * as message_scroll from "./message_scroll.ts";
 import * as message_view from "./message_view.ts";
@@ -594,6 +595,7 @@ export async function initialize_everything(state_data) {
     message_viewport.initialize();
     banners.initialize();
     navbar_alerts.initialize();
+    message_recap.initialize();
     popup_banners.initialize();
     message_list_hover.initialize();
     initialize_kitchen_sink_stuff();
