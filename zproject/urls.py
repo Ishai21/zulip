@@ -209,6 +209,7 @@ from zerver.views.streams import (
 )
 from zerver.views.submessage import process_submessage
 from zerver.views.thumbnail import backend_serve_thumbnail, check_thumbnail_status
+from zerver.views.topic_title import check_topic_title_backend, get_topic_title_suggestion_backend
 from zerver.views.tusd import handle_tusd_hook
 from zerver.views.typing import send_message_edit_notification_backend, send_notification_backend
 from zerver.views.unsubscribe import email_unsubscribe
@@ -441,6 +442,11 @@ v1_api_and_json_patterns = [
     rest_path("messages/<int:message_id>/history", GET=get_message_edit_history),
     rest_path("messages/matches_narrow", GET=messages_in_narrow_backend),
     rest_path("messages/recap", GET=get_message_recap_backend),
+    rest_path(
+        "topics/title_suggestion",
+        GET=get_topic_title_suggestion_backend,
+        POST=check_topic_title_backend,
+    ),
     rest_path("users/me/subscriptions/properties", POST=update_subscription_properties_backend),
     rest_path("users/me/subscriptions/<int:stream_id>", PATCH=update_subscriptions_property),
     rest_path("submessage", POST=process_submessage),

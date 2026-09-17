@@ -84,6 +84,7 @@ from zerver.lib.string_validation import check_stream_name
 from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import get_topic_display_name, participants_for_topic
+from zerver.lib.topic_drift import maybe_enqueue_topic_drift_check
 from zerver.lib.topic_link_util import get_message_link_label, get_stream_link_syntax
 from zerver.lib.types import UserProfileChangeDict
 from zerver.lib.url_encoding import message_link_url, stream_message_url
@@ -1402,6 +1403,9 @@ def do_send_messages(
                 "urls": list(send_request.links_for_embed),
             }
             queue_event_on_commit("embed_links", event_data)
+
+        if send_request.message.is_channel_message:
+            maybe_enqueue_topic_drift_check(send_request)
 
         # Check if this is a 1:1 DM between a user and the Welcome Bot,
         # in which case we may want to send an automated response.

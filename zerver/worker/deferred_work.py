@@ -23,8 +23,9 @@ from zerver.lib.remote_server import (
     send_server_data_to_push_bouncer,
 )
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
+from zerver.lib.topic_drift import check_topic_drift
 from zerver.lib.upload import handle_reupload_emojis_event
-from zerver.models import Realm, RealmAuditLog, RealmExport
+from zerver.models import Realm, RealmAuditLog, RealmExport, Stream
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
@@ -63,6 +64,22 @@ class DeferredWorker(QueueProcessingWorker):
                     user_profile.id,
                     recipient_id,
                 )
+        elif event["type"] == "topic_drift_check":
+            realm = Realm.objects.get(id=event["realm_id"])
+            stream = Stream.objects.get(id=event["stream_id"], realm=realm)
+            suggestion = check_topic_drift(
+                realm,
+                stream,
+                event["topic_name"],
+                event["sender_id"],
+                event["message_id"],
+            )
+            logger.info(
+                "Topic drift check for stream %s topic %r: %s",
+                stream.id,
+                event["topic_name"],
+                "drifted" if suggestion is not None else "ok",
+            )
         elif event["type"] == "clear_push_device_tokens":
             logger.info(
                 "Clearing push device tokens for user_profile_id %s",
