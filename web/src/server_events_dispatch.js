@@ -95,6 +95,7 @@ import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import * as submessage from "./submessage.ts";
 import * as theme from "./theme.ts";
+import * as topic_title_suggestion from "./topic_title_suggestion.ts";
 import {group_setting_value_schema} from "./types.ts";
 import * as typing_events from "./typing_events.ts";
 import * as unread_ops from "./unread_ops.ts";
@@ -239,6 +240,12 @@ export function dispatch_normal_event(event) {
 
         case "onboarding_steps":
             onboarding_steps.update_onboarding_steps_to_display(event.onboarding_steps);
+            break;
+
+        case "topic_title_suggestion":
+            topic_title_suggestion.handle_event(
+                topic_title_suggestion.topic_title_suggestion_schema.parse(event),
+            );
             break;
 
         case "invites_changed":

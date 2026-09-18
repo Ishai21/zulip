@@ -95,14 +95,38 @@ def should_check_topic_drift(send_request: SendMessageRequest) -> bool:
         return False
 
     assert stream.recipient_id is not None
-    message_count = messages_for_topic(send_request.realm.id, stream.recipient_id, topic_name).count()
+    message_count = messages_for_topic(
+        send_request.realm.id, stream.recipient_id, topic_name
+    ).count()
     if message_count < DRIFT_MIN_MESSAGES or message_count % DRIFT_CHECK_EVERY_N_MESSAGES != 0:
         return False
 
     return cache_get(cooldown_cache_key(stream.id, topic_name)) is None
 
 
+def notify_sender_of_existing_suggestion(send_request: SendMessageRequest) -> bool:
+    """Re-surface a pending suggestion to whoever posts in the topic next.
+
+    Costs one cache lookup and no LLM call, so a suggestion made while
+    one participant was active is still seen by the others.
+    """
+    stream = send_request.stream
+    if stream is None or send_request.message.sender.is_bot:
+        return False
+    suggestion = get_topic_title_suggestion(stream.id, send_request.message.topic_name())
+    if suggestion is None:
+        return False
+    send_event_on_commit(
+        send_request.realm,
+        {"type": "topic_title_suggestion", **suggestion},
+        [send_request.message.sender_id],
+    )
+    return True
+
+
 def maybe_enqueue_topic_drift_check(send_request: SendMessageRequest) -> None:
+    if notify_sender_of_existing_suggestion(send_request):
+        return
     if not should_check_topic_drift(send_request):
         return
     stream = send_request.stream

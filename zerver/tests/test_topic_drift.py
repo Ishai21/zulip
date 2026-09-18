@@ -1,6 +1,8 @@
 import json
 from unittest import mock
 
+from typing_extensions import override
+
 from zerver.lib.llm import LLMError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic_drift import (
@@ -23,6 +25,7 @@ NOT_DRIFTED_RESPONSE = json.dumps({"drifted": False, "suggested_title": "", "rea
 
 
 class TopicDriftTest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.hamlet = self.example_user("hamlet")
@@ -39,7 +42,9 @@ class TopicDriftTest(ZulipTestCase):
     def test_check_is_gated_by_message_count(self) -> None:
         with (
             mock.patch("zerver.lib.topic_drift.get_gemini_api_key", return_value="key"),
-            mock.patch("zerver.lib.topic_drift.generate_text", return_value=NOT_DRIFTED_RESPONSE) as m,
+            mock.patch(
+                "zerver.lib.topic_drift.generate_text", return_value=NOT_DRIFTED_RESPONSE
+            ) as m,
         ):
             self.send_topic_messages(DRIFT_MIN_MESSAGES - 1)
             m.assert_not_called()
@@ -88,6 +93,28 @@ class TopicDriftTest(ZulipTestCase):
         )
         data = self.assert_json_success(result)
         self.assertEqual(data["suggestion"]["suggested_title"], "Staging deploy Postgres timeout")
+
+    def test_pending_suggestion_is_resent_to_next_sender(self) -> None:
+        with (
+            mock.patch("zerver.lib.topic_drift.get_gemini_api_key", return_value="key"),
+            mock.patch(
+                "zerver.lib.topic_drift.generate_text", return_value=DRIFTED_RESPONSE
+            ) as llm,
+            mock.patch("zerver.lib.topic_drift.send_event_on_commit") as send_event,
+        ):
+            self.send_topic_messages(6)
+            self.assertEqual(llm.call_count, 1)
+            self.assertEqual(send_event.call_count, 1)
+
+            # Another participant posting in the topic gets the pending
+            # suggestion without a second LLM call.
+            cordelia = self.example_user("cordelia")
+            self.send_stream_message(cordelia, "Verona", "one more", topic_name=self.topic)
+            self.assertEqual(llm.call_count, 1)
+            self.assertEqual(send_event.call_count, 2)
+            _realm, event, user_ids = send_event.call_args.args
+            self.assertEqual(user_ids, [cordelia.id])
+            self.assertEqual(event["suggested_title"], "Staging deploy Postgres timeout")
 
     def test_llm_failure_is_swallowed(self) -> None:
         with (

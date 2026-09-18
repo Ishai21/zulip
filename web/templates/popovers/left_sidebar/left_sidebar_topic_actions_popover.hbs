@@ -48,6 +48,12 @@
                 </a>
             </li>
             {{/if}}
+            <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
+                <a role="menuitem" class="sidebar-popover-suggest-topic-title popover-menu-link" tabindex="0">
+                    <i class="popover-menu-icon zulip-icon zulip-icon-edit" aria-hidden="true"></i>
+                    <span class="popover-menu-label">{{t "Suggest a better title"}}</span>
+                </a>
+            </li>
             {{#if has_starred_messages}}
             <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
                 <a role="menuitem" class="sidebar-popover-unstar-all-in-topic popover-menu-link" tabindex="0">

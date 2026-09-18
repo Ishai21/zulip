@@ -25,6 +25,7 @@ import * as stream_topic_history from "./stream_topic_history.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as tippyjs from "./tippyjs.ts";
 import * as topic_link_util from "./topic_link_util.ts";
+import * as topic_title_suggestion from "./topic_title_suggestion.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as user_topics from "./user_topics.ts";
@@ -302,6 +303,12 @@ function register_popover_menu(target: string, placement: tippy.Placement): void
 
                 $popper.one("click", ".sidebar-popover-summarize-topic", () => {
                     message_summary.get_narrow_summary(stream_id, topic_name);
+
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+
+                $popper.one("click", ".sidebar-popover-suggest-topic-title", () => {
+                    topic_title_suggestion.request_suggestion(stream_id, topic_name);
 
                     popover_menus.hide_current_popover_if_visible(instance);
                 });

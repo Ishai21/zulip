@@ -161,6 +161,7 @@ import * as timerender from "./timerender.ts";
 import * as tippyjs from "./tippyjs.ts";
 import * as topic_list from "./topic_list.ts";
 import * as topic_popover from "./topic_popover.ts";
+import * as topic_title_suggestion from "./topic_title_suggestion.ts";
 import * as transmit from "./transmit.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as typing from "./typing.ts";
@@ -596,6 +597,7 @@ export async function initialize_everything(state_data) {
     banners.initialize();
     navbar_alerts.initialize();
     message_recap.initialize();
+    topic_title_suggestion.initialize();
     popup_banners.initialize();
     message_list_hover.initialize();
     initialize_kitchen_sink_stuff();
