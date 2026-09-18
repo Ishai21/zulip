@@ -1,80 +1,176 @@
-# Zulip overview
+# Zulip with LLM features — Message Recap & Topic Title Improver
 
-[Zulip](https://zulip.com) is an open-source organized team chat app with unique
-[topic-based threading][why-zulip] that combines the best of email and chat to
-make remote work productive and delightful. Fortune 500 companies, [leading open
-source projects][rust-case-study], and thousands of other organizations use
-Zulip every day. Zulip is the only [modern team chat app][features] that is
-designed for both live and asynchronous conversations.
+Individual Assignment 1, 17-645 Machine Learning in Production (Fall 2026).
 
-Zulip is built by a distributed community of developers from all around the
-world, with 99+ people who have each contributed 100+ commits. With
-over 1,500 contributors merging over 500 commits a month, Zulip is the
-largest and fastest growing open source team chat project.
+This repository is a fork of [Zulip](https://github.com/zulip/zulip) with two
+LLM-powered features added:
 
-Come find us on the [development community chat](https://zulip.com/development-community/)!
+1. **Message Recap** — a navbar button that summarizes all of a user's unread
+   messages on one page, with clickable links back to each original message.
+2. **Topic Title Improver** — detects when a topic's conversation has drifted
+   away from its title and offers a better one, which the user can accept with
+   one click.
 
-[![GitHub Actions build status](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml/badge.svg)](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml?query=branch%3Amain)
-[![coverage status](https://img.shields.io/codecov/c/github/zulip/zulip/main.svg)](https://codecov.io/gh/zulip/zulip)
-[![Mypy coverage](https://img.shields.io/badge/mypy-100%25-green.svg)][mypy-coverage]
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
-[![GitHub release](https://img.shields.io/github/release/zulip/zulip.svg)](https://github.com/zulip/zulip/releases/latest)
-[![docs](https://readthedocs.org/projects/zulip/badge/?version=latest)](https://zulip.readthedocs.io/en/latest/)
-[![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
-[![Bluesky](https://img.shields.io/badge/bluesky-@zulip.bsky.social-blue.svg?style=flat)](https://bsky.app/profile/zulip.bsky.social)
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/zulip)](https://github.com/sponsors/zulip)
+Both features use Google Gemini through its REST API. No new Python or
+JavaScript dependencies were added. See [implementation.md](implementation.md)
+for how they work and for the demo video.
 
-[mypy-coverage]: https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/
-[why-zulip]: https://zulip.com/why-zulip/
-[rust-case-study]: https://zulip.com/case-studies/rust/
-[features]: https://zulip.com/features/
+---
 
-## Getting started
+## 1. Prerequisites
 
-- **Contributing code**. Check out our [guide for new
-  contributors](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)
-  to get started. We have invested in making Zulip’s code highly
-  readable, thoughtfully tested, and easy to modify. Beyond that, we
-  have written an extraordinary 185K words of documentation for Zulip
-  contributors.
+- **Docker Desktop** (macOS/Windows) or Docker Engine (Linux)
+- **Vagrant** 2.4+ (`brew install --cask vagrant` on macOS)
+- **Git**
+- A **Gemini API key** (free): go to <https://aistudio.google.com/apikey>,
+  sign in with a Google account, click **Create API key**, and copy it.
 
-- **Contributing non-code**. [Report an
-  issue](https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html),
-  [translate](https://zulip.readthedocs.io/en/latest/translating/translating.html)
-  Zulip into your language, or [give us
-  feedback](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html).
-  We'd love to hear from you, whether you've been using Zulip for years, or are just
-  trying it out for the first time.
+> Recommended: give Docker Desktop at least **6 GB of memory**
+> (Docker Desktop → Settings → Resources → Memory). Zulip's webpack watcher is
+> memory-hungry and gets OOM-killed on the default 2–4 GB, which makes the web
+> app hang on the loading spinner.
 
-- **Checking Zulip out**. The best way to see Zulip in action is to [drop
-  by](https://chat.zulip.org/?show_try_zulip_modal) the Zulip development
-  community (no account required). We also recommend reading about Zulip's
-  [unique approach](https://zulip.com/why-zulip/) to organizing conversations.
+## 2. Clone and start the development environment
 
-- **Running a Zulip server**. Self-host Zulip directly on Ubuntu or Debian
-  Linux, in [Docker](https://github.com/zulip/docker-zulip), or with prebuilt
-  images for [Digital Ocean](https://marketplace.digitalocean.com/apps/zulip) and
-  [Render](https://render.com/docs/deploy-zulip).
-  Learn more about [self-hosting Zulip](https://zulip.com/self-hosting/).
+This follows the standard Zulip Vagrant workflow
+(<https://zulip.readthedocs.io/en/latest/development/setup-recommended.html>).
 
-- **Using Zulip without setting up a server**. Learn about [Zulip
-  Cloud](https://zulip.com/zulip-cloud/) hosting options. Zulip sponsors free [Zulip
-  Cloud Standard](https://zulip.com/plans/) for hundreds of worthy
-  organizations, including [fellow open-source
-  projects](https://zulip.com/for/open-source/).
+```bash
+git clone https://github.com/Ishai21/zulip.git
+cd zulip
+vagrant up --provider=docker     # first run takes 10–20 minutes
+```
 
-- **Participating in [outreach
-  programs](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#outreach-programs)**
-  like [Google Summer of Code](https://developers.google.com/open-source/gsoc/).
+## 3. Provide the Gemini API key
 
-- **Supporting Zulip**. Learn about all the ways you can [support
-  Zulip](https://zulip.com/help/support-zulip-project), including contributing
-  financially, and helping others discover it.
+The key is read at runtime from **either** of these (checked in this order).
+Neither is committed to git.
 
-You may also be interested in reading our [blog](https://blog.zulip.org/), and
-following us on [LinkedIn](https://www.linkedin.com/company/zulip-project/),
-[Mastodon](https://fosstodon.org/@zulip), and [X](https://x.com/zulip).
+**Option A — environment variable** (simplest):
 
-Zulip is distributed under the
-[Apache 2.0](https://github.com/zulip/zulip/blob/main/LICENSE) license.
+```bash
+vagrant ssh
+export GEMINI_API_KEY="your-key-here"
+```
+
+(The variable must be set in the same shell that runs `./tools/run-dev` below.)
+
+**Option B — Zulip's dev secrets file** (persists across shells; the file is
+already in `.gitignore`):
+
+```bash
+vagrant ssh
+echo "gemini_api_key = your-key-here" >> ~/zulip/zproject/dev-secrets.conf
+```
+
+Optional: choose a different Gemini model with `GEMINI_MODEL=...` (env var) or
+`gemini_model = ...` in the secrets file. The default is `gemini-3.5-flash-lite`,
+which is fast and within the free tier.
+
+## 4. Run the server
+
+Inside the VM (`vagrant ssh`), from `~/zulip`:
+
+```bash
+./tools/run-dev
+```
+
+Wait for `frontend (webpack ...) compiled successfully`, then open
+<http://localhost:9991> and log in as any development user (e.g.
+**hamlet@zulip.com** or **iago@zulip.com**; no password needed).
+
+`./tools/run-dev` must be started from an interactive `vagrant ssh` shell —
+running it via `vagrant ssh -c "..."` fails with `os.setpgrp: Operation not
+permitted`.
+
+## 5. Using the features
+
+### Message Recap
+
+1. Make sure the logged-in user has some unread messages (send a few messages
+   as another user, or use the API snippet below).
+2. Click the **inbox-style icon** in the top-right navbar (immediately left of
+   the `?` help icon; tooltip "Recap unread messages").
+3. A modal shows a recap grouped by conversation. Each bullet has one or more
+   **sender chips**; clicking a chip closes the modal and jumps to that exact
+   message.
+
+To create unread messages for `hamlet` quickly from your host machine:
+
+```bash
+KEY=$(curl -s -X POST 'http://localhost:9991/api/v1/dev_fetch_api_key' --data-urlencode 'username=iago@zulip.com' | sed -E 's/.*"api_key":"([^"]+)".*/\1/')
+curl -s -X POST http://localhost:9991/api/v1/messages -u iago@zulip.com:$KEY \
+  -d type=stream -d to=Verona --data-urlencode 'topic=release 4.2' \
+  --data-urlencode 'content=We are cutting the 4.2 branch Friday at noon.'
+```
+
+Or call the endpoint directly:
+
+```bash
+curl -s "http://localhost:9991/api/v1/messages/recap" -u hamlet@zulip.com:$HAMLET_KEY
+```
+
+### Topic Title Improver
+
+**Automatic:** post messages in a channel topic. Once the topic has at least 5
+messages, every 3rd message (the 6th, 9th, 12th, …) triggers a background
+check, at most once per topic every 10 minutes. If the LLM judges that the
+conversation has drifted from the title, the sender of that message sees a
+banner at the top of the page: *"The topic … seems to have drifted. Suggested
+title: …"* with **Rename topic** and **Dismiss** buttons. Anyone who posts in
+the topic afterwards sees the same banner (no additional LLM call).
+
+**Manual (for demos):** in the left sidebar, hover a topic → click **⋮** →
+**Suggest a better title**. This runs the check immediately, bypassing the
+thresholds. If the title still fits, a short green notice says so.
+
+> The adjacent menu item **"Summarize recent messages"** is Zulip's own
+> OpenAI-based feature and is unrelated to this assignment; it is not
+> configured and will show an empty dialog.
+
+Direct API access:
+
+```bash
+# Read the pending suggestion for a topic (null if none)
+curl -s "http://localhost:9991/api/v1/topics/title_suggestion?stream_id=11&topic=sprint%20planning" -u iago@zulip.com:$KEY
+
+# Force a check now
+curl -s -X POST "http://localhost:9991/api/v1/topics/title_suggestion" -u iago@zulip.com:$KEY \
+  -d stream_id=11 --data-urlencode "topic=sprint planning"
+```
+
+## 6. Running the tests
+
+All LLM calls are mocked; the tests run offline. Inside the VM:
+
+```bash
+./tools/test-backend zerver.tests.test_recap zerver.tests.test_topic_drift
+./tools/lint zerver/lib/llm.py zerver/lib/recap.py zerver/lib/topic_drift.py \
+    zerver/views/recap.py zerver/views/topic_title.py \
+    web/src/message_recap.ts web/src/topic_title_suggestion.ts
+```
+
+## 7. Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| Web app stuck on the Zulip loading spinner; `502` for `/webpack/app.js` | webpack was OOM-killed. Raise Docker memory (see §1), `vagrant reload`, restart `./tools/run-dev`. |
+| New UI elements (recap icon, menu item) don't appear | The browser cached an old bundle. Hard-refresh (Cmd/Ctrl+Shift+R) or open a private window. Brave users: disable Shields for `localhost`. |
+| Recap modal says "Message recap is not configured on this server." | No Gemini key found. See §3, then restart `./tools/run-dev`. |
+| `git` commands inside the VM fail with "dubious ownership" | `git config --global --add safe.directory '*'` inside the VM. |
+| `./tools/run-dev` errors with `os.setpgrp` | Run it from an interactive `vagrant ssh` shell, not `vagrant ssh -c`. |
+
+## 8. Files added or changed
+
+| Area | Files |
+|---|---|
+| LLM client | `zerver/lib/llm.py` |
+| Recap backend | `zerver/lib/recap.py`, `zerver/views/recap.py`, `zerver/tests/test_recap.py` |
+| Recap frontend | `web/src/message_recap.ts`, `web/templates/message_recap.hbs`, `web/templates/navbar.hbs`, `web/templates/tooltip_templates.hbs`, `web/styles/modal.css` |
+| Title Improver backend | `zerver/lib/topic_drift.py`, `zerver/views/topic_title.py`, `zerver/actions/message_send.py` (hook), `zerver/worker/deferred_work.py` (job), `zerver/tests/test_topic_drift.py` |
+| Title Improver frontend | `web/src/topic_title_suggestion.ts`, `web/src/server_events_dispatch.js`, `web/src/topic_popover.ts`, `web/templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.hbs` |
+| Routing / init | `zproject/urls.py`, `web/src/ui_init.js` |
+
+---
+
+Original Zulip documentation: <https://zulip.readthedocs.io/>
