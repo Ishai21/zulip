@@ -7,7 +7,7 @@ Both features call Google Gemini through one small client,
 (`LLMNotConfiguredError`, `LLMError`) so callers can degrade gracefully. No new
 dependencies were added; Zulip already ships `requests`.
 
-**Demo video (both features):** <https://www.youtube.com/watch?v=zC6H85PWoLI>
+**Demo video (Both features):** <https://www.youtube.com/watch?v=zC6H85PWoLI>
 
 ---
 
@@ -53,6 +53,7 @@ identically to links Zulip generates itself.
 Errors: `LLMNotConfiguredError`/`LLMError` become `JsonableError` (HTTP 400
 with a readable message); a malformed model response yields an empty recap
 rather than a 500. Zero unreads short-circuits before any LLM call.
+
 
 **Frontend** — [`web/src/message_recap.ts`](web/src/message_recap.ts) and
 [`web/templates/message_recap.hbs`](web/templates/message_recap.hbs). A button
